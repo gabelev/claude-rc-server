@@ -1,4 +1,4 @@
-# claude-rc-droplet
+# claude-rc-server
 
 Persistent, multi-repo Claude Code Remote Control on a headless server (DigitalOcean or any Ubuntu/Debian VPS). Clone it, run three scripts, and drive long-lived Claude Code sessions from claude.ai/code or the mobile app, one server per repo, surviving reboots.
 
@@ -18,8 +18,8 @@ Each session runs on the box against your local filesystem, MCP servers, and con
 ## Quickstart
 
 ```bash
-git clone <this-repo-url> ~/claude-rc-droplet
-cd ~/claude-rc-droplet
+git clone <this-repo-url> ~/claude-rc-server
+cd ~/claude-rc-server
 
 ./scripts/install.sh                 # deps, config, systemd user unit, linger
 nano config/claude-rc.env            # set CAPACITY, SPAWN, optional token
@@ -94,7 +94,7 @@ Optional but nice: put Tailscale on the droplet so the one-time auth and any deb
 ## Layout
 
 ```
-claude-rc-droplet/
+claude-rc-server/
 ├── README.md
 ├── bin/
 │   └── claude-rc.sh           # per-repo server with restart loop
