@@ -1,0 +1,23 @@
+[Unit]
+Description=Claude Code Remote Control server (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# tmux daemonizes, so we treat the launch as a one-shot that stays "active".
+# App-level crash recovery is handled by the while-loop inside claude-rc.sh,
+# not by systemd, which keeps the unit tracking simple and reliable.
+Type=oneshot
+RemainAfterExit=yes
+
+# The leading "-" makes the env file optional (no failure if it is absent).
+# __CLAUDE_RC_ROOT__ is replaced with the real repo path by scripts/install.sh.
+EnvironmentFile=-__CLAUDE_RC_ROOT__/config/claude-rc.env
+
+# A pinned socket name (-L claude-rc) keeps the session attachable from an
+# interactive shell regardless of how systemd sets XDG_RUNTIME_DIR.
+ExecStart=/usr/bin/tmux -L claude-rc new-session -d -s claude-%i "__CLAUDE_RC_ROOT__/bin/claude-rc.sh %i"
+ExecStop=/usr/bin/tmux -L claude-rc kill-session -t claude-%i
+
+[Install]
+WantedBy=default.target
