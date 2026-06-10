@@ -37,7 +37,7 @@ fi
 
 if ! command -v claude >/dev/null 2>&1; then
   say "Installing Claude Code"
-  npm install -g @anthropic-ai/claude-code
+  sudo npm install -g @anthropic-ai/claude-code
 fi
 echo "claude $(claude --version 2>/dev/null || echo '(version check failed)')"
 
