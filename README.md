@@ -8,6 +8,19 @@ A Remote Control server runs in **server mode** and is anchored to one working d
 
 Each session runs on the box against your local filesystem, MCP servers, and config. The web and mobile interfaces are just a window into it. Traffic is outbound HTTPS only; no inbound ports are opened.
 
+## Pairing with Chaos Dimension
+
+[Chaos Dimension](https://github.com/gabelev/chaos_dimension) ([live](https://chaosdimension.fyi)) is the other half of this setup: a themeable mission-control board for personal projects and AI agent orchestration. This repo is the *runtime* that hosts the agents; Chaos Dimension is the *board* that coordinates what they work on and shows what they did.
+
+The two link through MCP. `setup-mcp.sh` registers the Chaos Dimension MCP endpoint at user scope (see [MCP across every repo](#mcp-across-every-repo)), so every session this server spawns, across every repo, can:
+
+- **read** its work from the board (`list_tasks`, `claim_task`), and
+- **report progress back** (`report_progress`, `update_task`).
+
+So the Kanban columns and Agent Monitor on the board reflect what your droplet's agents are doing in near real time. Dispatch a task from the web or your phone, an agent here claims it, and you watch the logs stream back into Chaos Dimension while your laptop is closed.
+
+You don't strictly need Chaos Dimension to use this repo (MCP registration is optional), but the two were built to run together. Chaos Dimension's README carries the mirror of this section under "Coordinate agents on a droplet or remote server."
+
 ## Requirements
 
 - A Claude **Pro, Max, Team, or Enterprise** plan. Remote Control does not work with an API key. On Team/Enterprise an admin must enable the Remote Control toggle.
