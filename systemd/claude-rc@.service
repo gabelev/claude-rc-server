@@ -10,6 +10,14 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 
+# All repo servers share one tmux server (socket -L claude-rc). That server
+# daemon lives in the cgroup of whichever unit created it first. With the
+# default KillMode=control-group, stopping/restarting THAT unit would SIGKILL
+# the whole cgroup -- taking the shared tmux server and every other repo's
+# session down with it. KillMode=process limits systemd to the main PID and
+# leaves ExecStop's targeted `kill-session` to remove just this repo's session.
+KillMode=process
+
 # The leading "-" makes the env file optional (no failure if it is absent).
 # __CLAUDE_RC_ROOT__ is replaced with the real repo path by scripts/install.sh.
 EnvironmentFile=-__CLAUDE_RC_ROOT__/config/claude-rc.env
