@@ -56,12 +56,33 @@ echo "[claude-rc] starting server for '$REPO' in $REPO_DIR (spawn=$SPAWN, capaci
 
 # The loop restarts claude if it crashes or times out after a long network
 # outage. systemd handles reboot survival; this handles in-session recovery.
+#
+# The restart delay uses jitter + exponential backoff. When a network blip drops
+# several per-repo servers at once, a fixed 5s delay makes them all re-register
+# on the same beat. That synchronized stampede trips the Remote Control relay's
+# per-account concurrency guard, which answers with
+#   Registration/Poll: Access denied (403). Check your organization permissions.
+# and the denied servers retry on the same beat, sustaining the burst. Jitter
+# de-synchronizes them; backoff stops hammering during a sustained outage.
+delay=5
 while true; do
   claude remote-control \
     --spawn "$SPAWN" \
     --capacity "$CAPACITY" \
     --remote-control-session-name-prefix "$REPO"
   code=$?
-  echo "[claude-rc] '$REPO' server exited (code $code); restarting in 5s" >&2
-  sleep 5
+
+  # Clean exit resets the backoff; an error backs off up to 60s.
+  if [ "$code" -eq 0 ]; then
+    delay=5
+  else
+    delay=$(( delay * 2 ))
+    [ "$delay" -gt 60 ] && delay=60
+  fi
+
+  # Add 0..delay seconds of jitter so concurrent supervisors spread out.
+  jitter=$(( RANDOM % (delay + 1) ))
+  wait=$(( delay + jitter ))
+  echo "[claude-rc] '$REPO' server exited (code $code); restarting in ${wait}s" >&2
+  sleep "$wait"
 done
